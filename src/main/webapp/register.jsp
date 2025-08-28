@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Register</title>
     <style>
         body { font-family: Arial; background: #f0f0f0; text-align:center; padding:50px; }
         form { background: #fff; padding:20px; border-radius:10px; display:inline-block; }
@@ -12,13 +12,13 @@
     </style>
 </head>
 <body>
-    <h2>Login</h2>
+    <h2>Register</h2>
     <form method="post">
         <input type="text" name="username" placeholder="Username" required /><br/>
         <input type="password" name="password" placeholder="Password" required /><br/>
-        <button type="submit">Login</button>
+        <button type="submit">Register</button>
     </form>
-    <p>New user? <a href="register.jsp">Register here</a></p>
+    <p>Already have an account? <a href="login.jsp">Login here</a></p>
 
 <%
     String user = request.getParameter("username");
@@ -32,16 +32,20 @@
                 "root",
                 ""
             );
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE username=? AND password=?");
-            ps.setString(1, user);
-            ps.setString(2, pass);
-            ResultSet rs = ps.executeQuery();
+
+            PreparedStatement check = con.prepareStatement("SELECT * FROM users WHERE username=?");
+            check.setString(1, user);
+            ResultSet rs = check.executeQuery();
 
             if(rs.next()){
-                out.println("<p style='color:green;'>Login successful! Welcome " + user + "</p>");
-                response.sendRedirect("index.jsp"); // redirect to quote page
+                out.println("<p style='color:red;'>Username already exists!</p>");
             } else {
-                out.println("<p style='color:red;'>Invalid username or password!</p>");
+                PreparedStatement ps = con.prepareStatement("INSERT INTO users(username, password) VALUES (?, ?)");
+                ps.setString(1, user);
+                ps.setString(2, pass);
+                ps.executeUpdate();
+
+                out.println("<p style='color:green;'>Registration successful! You can now <a href='login.jsp'>login</a>.</p>");
             }
 
             con.close();

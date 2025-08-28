@@ -13,7 +13,7 @@
 </head>
 <body>
     <h2>Login</h2>
-    <form method="post">
+    <form action="validateLogin.jsp" method="post">
         <input type="text" name="username" placeholder="Username" required /><br/>
         <input type="password" name="password" placeholder="Password" required /><br/>
         <button type="submit">Login</button>

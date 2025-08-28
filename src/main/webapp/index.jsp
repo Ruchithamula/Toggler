@@ -1,59 +1,54 @@
+<%@ page import="java.sql.*" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quote Generator</title>
+    <title>Login</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: white;
-            text-align: center;
-            padding: 50px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 50px auto;
-            width: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        button {
-            background: #fff;
-            color: #2575fc;
-            font-size: 16px;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        button:hover {
-            background: #eee;
-        }
+        body { font-family: Arial; background: #f0f0f0; text-align:center; padding:50px; }
+        form { background: #fff; padding:20px; border-radius:10px; display:inline-block; }
+        input { margin:10px; padding:8px; width:200px; }
+        button { padding:8px 15px; }
     </style>
 </head>
 <body>
-    <h1>✨ Random Quote Generator ✨</h1>
-    <div class="card">
-        <p id="quote">Click the button to see a quote</p>
-        <button onclick="newQuote()">Get Quote</button>
-    </div>
+    <h2>Login</h2>
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required /><br/>
+        <input type="password" name="password" placeholder="Password" required /><br/>
+        <button type="submit">Login</button>
+    </form>
+    <p>New user? <a href="register.jsp">Register here</a></p>
 
-    <script>
-        const quotes = [
-            "The best way to predict the future is to invent it. – Alan Kay",
-            "Success is not final, failure is not fatal: it is the courage to continue that counts. – Winston Churchill",
-            "Believe you can and you're halfway there. – Theodore Roosevelt",
-            "Don't watch the clock; do what it does. Keep going. – Sam Levenson",
-            "Act as if what you do makes a difference. It does. – William James"
-        ];
+<%
+    String user = request.getParameter("username");
+    String pass = request.getParameter("password");
 
-        function newQuote() {
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            document.getElementById("quote").innerText = quotes[randomIndex];
+    if(user != null && pass != null){
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/Login?useSSL=false&serverTimezone=UTC",
+                "root",
+                ""
+            );
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE username=? AND password=?");
+            ps.setString(1, user);
+            ps.setString(2, pass);
+            ResultSet rs = ps.executeQuery();
+
+            if(rs.next()){
+                out.println("<p style='color:green;'>Login successful! Welcome " + user + "</p>");
+                response.sendRedirect("index.jsp"); // redirect to quote page
+            } else {
+                out.println("<p style='color:red;'>Invalid username or password!</p>");
+            }
+
+            con.close();
+        } catch(Exception e){
+            out.println("<p style='color:red;'>Error: "+ e.getMessage() +"</p>");
         }
-    </script>
+    }
+%>
 </body>
 </html>

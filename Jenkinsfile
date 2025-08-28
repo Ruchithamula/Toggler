@@ -1,33 +1,45 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven-3.9.11'   // Jenkins Maven tool name (configure in Jenkins)
-        jdk 'JDK21'            // Jenkins JDK name (configure in Jenkins)
+    environment {
+        DOCKER_IMAGE = "quote-jsp-app:latest"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/PavithraMunagala/quote-jsp-app.git',
-                    credentialsId: 'github-credentials'
+                git 'https://github.com/PavithraMunagala/quote-jsp-app.git'
             }
         }
 
         stage('Build with Maven') {
             steps {
-                sh "mvn clean package"
+                bat "C:\\tools\\apache-maven-3.9.11\\bin\\mvn clean package"
             }
         }
 
-        stage('Deploy to Tomcat') {
+        stage('Build Docker Image') {
             steps {
-                // Copy WAR to Tomcat webapps directory
-                sh '''
-                cp target/quote-jsp-app.war C:/tools/apache-tomcat-10.1.44/webapps/
-                '''
+                bat "docker build -t %DOCKER_IMAGE% ."
             }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                // Stop and remove existing container if any
+                bat "docker rm -f quote-jsp-app || echo 'No existing container'"
+                // Run container on port 8082
+                bat "docker run -d -p 8082:8080 --name quote-jsp-app %DOCKER_IMAGE%"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the console output.'
         }
     }
 }
